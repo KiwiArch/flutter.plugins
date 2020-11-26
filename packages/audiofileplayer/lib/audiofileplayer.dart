@@ -628,6 +628,11 @@ class Audio with WidgetsBindingObserver {
       return;
     }
 
+    if (rate < 0.5 || rate > 2.0) {
+      _logger.warning('Invalid rate value $rate is being clamped to 0.5 to 2.0.');
+      rate.clamp(0.5, 2.0);
+    }
+
     _rate = rate;
 
     try {
