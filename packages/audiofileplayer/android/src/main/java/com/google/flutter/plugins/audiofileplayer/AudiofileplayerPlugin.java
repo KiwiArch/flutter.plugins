@@ -79,6 +79,8 @@ public class AudiofileplayerPlugin
   private static final String POSITION_SECONDS = "position_seconds";
   private static final String STOP_BACKGROUND_DISPLAY_METHOD = "stopBackgroundDisplay";
   private static final String ERROR_CODE = "AudioPluginError";
+  private static final String SET_RATE_METHOD = "setRate";
+  private static final String RATE = "rate";
 
   // Constants for updating playback state from Dart.
   private static final String SET_PLAYBACK_STATE_METHOD = "setPlaybackState";
@@ -303,6 +305,11 @@ public class AudiofileplayerPlugin
       Double volumeDouble = call.argument(VOLUME);
       double volume = volumeDouble.doubleValue();
       player.setVolume(volume);
+      result.success(null);
+    } else if (call.method.equals(SET_RATE_METHOD)) {
+      Double rateDouble = call.argument(RATE);
+      double rate = rateDouble.doubleValue();
+      player.setRate(rate);
       result.success(null);
     } else if (call.method.equals(PAUSE_METHOD)) {
       player.pause();

@@ -1,6 +1,7 @@
 package com.google.flutter.plugins.audiofileplayer;
 
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
 import android.os.Handler;
 import android.util.Log;
 import java.lang.ref.WeakReference;
@@ -120,6 +121,12 @@ abstract class ManagedMediaPlayer
 
   public void setVolume(double volume) {
     player.setVolume((float) volume, (float) volume);
+  }
+
+  public void setRate(double rate) {
+    PlaybackParams params = player.getPlaybackParams().setSpeed((float) rate);
+
+    player.setPlaybackParams(params);
   }
 
   public void pause() {

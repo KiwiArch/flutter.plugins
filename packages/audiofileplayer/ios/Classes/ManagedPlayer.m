@@ -242,6 +242,16 @@ static float const kTimerUpdateIntervalSeconds = 0.25;
   }
 }
 
+- (void)setRate:(double)rate {
+  if (_audioPlayer) {
+    _audioPlayer.enableRate = true;
+    _audioPlayer.rate = rate;
+  } else {
+    _avPlayer.enableRate = true;
+    _avPlayer.rate = rate;
+  }
+}
+
 #pragma mark - KVO
 
 - (void)observeValueForKeyPath:(NSString *)keyPath

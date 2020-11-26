@@ -35,6 +35,8 @@ const String durationSecondsKey = 'duration_seconds';
 const String onPositionCallback = 'onPosition';
 const String positionSecondsKey = 'position_seconds';
 const String errorCode = 'AudioPluginError';
+const String setRateMethod = 'setRate';
+const String rateKey = 'rate';
 
 // Constants for [MediaActionType] and [AndroidMediaButtonType].
 const String onMediaEventCallback = 'onMediaEvent';
@@ -57,8 +59,7 @@ const String mediaCustomTitleKey = 'customTitle';
 const String mediaCustomEventIdKey = 'customEventId';
 const String mediaCustomDrawableResourceKey = 'customDrawableResource';
 
-MethodChannel audioMethodChannel = const MethodChannel(channelName)
-  ..setMethodCallHandler(Audio.handleMethodCall);
+MethodChannel audioMethodChannel = const MethodChannel(channelName)..setMethodCallHandler(Audio.handleMethodCall);
 
 /// Specifies an action that the OS's background audio system may support.
 ///
@@ -102,10 +103,7 @@ enum MediaActionType {
 /// lockscreen/control center, bluetooth controllers, etc) and from Android
 /// buttons in the notification.
 class MediaEvent {
-  const MediaEvent(this.type,
-      {this.customEventId,
-      this.seekToPositionSeconds,
-      this.skipIntervalSeconds});
+  const MediaEvent(this.type, {this.customEventId, this.seekToPositionSeconds, this.skipIntervalSeconds});
 
   final MediaActionType type;
 
@@ -239,8 +237,8 @@ class MediaEvent {
 /// and use all the methods in [AudioSystem] to communicate desired state and
 /// supported behavior to the OS's background audio system.
 class Audio with WidgetsBindingObserver {
-  Audio._path(this._path, this._onComplete, this._onDuration, this._onPosition,
-      this._onError, this._looping, this._playInBackground)
+  Audio._path(this._path, this._onComplete, this._onDuration, this._onPosition, this._onError, this._looping,
+      this._playInBackground)
       : _audioId = _uuid.v4(),
         _absolutePath = null,
         _audioBytes = null,
@@ -248,8 +246,8 @@ class Audio with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  Audio._absolutePath(this._absolutePath, this._onComplete, this._onDuration,
-      this._onPosition, this._onError, this._looping, this._playInBackground)
+  Audio._absolutePath(this._absolutePath, this._onComplete, this._onDuration, this._onPosition, this._onError,
+      this._looping, this._playInBackground)
       : _audioId = _uuid.v4(),
         _path = null,
         _audioBytes = null,
@@ -257,8 +255,8 @@ class Audio with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  Audio._byteData(ByteData byteData, this._onComplete, this._onDuration,
-      this._onPosition, this._onError, this._looping, this._playInBackground)
+  Audio._byteData(ByteData byteData, this._onComplete, this._onDuration, this._onPosition, this._onError, this._looping,
+      this._playInBackground)
       : _audioId = _uuid.v4(),
         _audioBytes = Uint8List.view(byteData.buffer),
         _path = null,
@@ -267,8 +265,8 @@ class Audio with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  Audio._remoteUrl(this._remoteUrl, this._onComplete, this._onDuration,
-      this._onPosition, this._onError, this._looping, this._playInBackground)
+  Audio._remoteUrl(this._remoteUrl, this._onComplete, this._onDuration, this._onPosition, this._onError, this._looping,
+      this._playInBackground)
       : _audioId = _uuid.v4(),
         _audioBytes = null,
         _path = null,
@@ -292,15 +290,13 @@ class Audio with WidgetsBindingObserver {
   // onComplete callback.
   static final Map<String, Audio> _awaitingOnCompleteAudios = <String, Audio>{};
   @visibleForTesting
-  static int get awaitingOnCompleteAudiosCount =>
-      _awaitingOnCompleteAudios.length;
+  static int get awaitingOnCompleteAudiosCount => _awaitingOnCompleteAudios.length;
 
   // All Audio objects (including disposed ones), that are awaiting an
   // onDuration callback.
   static final Map<String, Audio> _awaitingOnDurationAudios = <String, Audio>{};
   @visibleForTesting
-  static int get awaitingOnDurationAudiosCount =>
-      _awaitingOnDurationAudios.length;
+  static int get awaitingOnDurationAudiosCount => _awaitingOnDurationAudios.length;
 
   // All Audio objects (including disposed ones), that are using an onPosition
   // callback. Audios are added on play()/resume() and removed on
@@ -327,6 +323,7 @@ class Audio with WidgetsBindingObserver {
   bool _looping;
   bool _playing = false;
   double _volume = 1.0;
+  double _rate = 1.0;
 
   /// Whether the [Audio] should continue playback when the app is backgrounded.
   bool _playInBackground = false;
@@ -350,8 +347,7 @@ class Audio with WidgetsBindingObserver {
       void onError(String message),
       bool looping = false,
       bool playInBackground = false}) {
-    final Audio audio = Audio._path(path, onComplete, onDuration, onPosition,
-        onError, looping, playInBackground)
+    final Audio audio = Audio._path(path, onComplete, onDuration, onPosition, onError, looping, playInBackground)
       .._load();
     return audio;
   }
@@ -367,9 +363,8 @@ class Audio with WidgetsBindingObserver {
       void onError(String message),
       bool looping = false,
       bool playInBackground = false}) {
-    final Audio audio = Audio._absolutePath(path, onComplete, onDuration,
-        onPosition, onError, looping, playInBackground)
-      .._load();
+    final Audio audio =
+        Audio._absolutePath(path, onComplete, onDuration, onPosition, onError, looping, playInBackground).._load();
     return audio;
   }
 
@@ -384,9 +379,8 @@ class Audio with WidgetsBindingObserver {
       void onError(String message),
       bool looping = false,
       bool playInBackground = false}) {
-    final Audio audio = Audio._byteData(byteData, onComplete, onDuration,
-        onPosition, onError, looping, playInBackground)
-      .._load();
+    final Audio audio =
+        Audio._byteData(byteData, onComplete, onDuration, onPosition, onError, looping, playInBackground).._load();
     return audio;
   }
 
@@ -405,8 +399,7 @@ class Audio with WidgetsBindingObserver {
       bool looping = false,
       bool playInBackground = false}) {
     if (Uri.tryParse(url) == null) return null;
-    final Audio audio = Audio._remoteUrl(url, onComplete, onDuration,
-        onPosition, onError, looping, playInBackground)
+    final Audio audio = Audio._remoteUrl(url, onComplete, onDuration, onPosition, onError, looping, playInBackground)
       .._load();
     return audio;
   }
@@ -416,10 +409,7 @@ class Audio with WidgetsBindingObserver {
   /// Keeps strong reference to this Audio (for channel callback routing)
   /// and requests underlying resource loading.
   Future<void> _load() async {
-    assert(_path != null ||
-        _absolutePath != null ||
-        _audioBytes != null ||
-        _remoteUrl != null);
+    assert(_path != null || _absolutePath != null || _audioBytes != null || _remoteUrl != null);
     assert(!_undisposedAudios.containsKey(_audioId));
     _logger.info('Loading audio $_audioId');
     // Note that we add the _audioId to _undisposedAudios before invoking a
@@ -534,8 +524,7 @@ class Audio with WidgetsBindingObserver {
   }
 
   // Shared code for both [play] and [resume].
-  Future<void> _playHelper(
-      {@required bool playFromStart, @required double endpointSeconds}) async {
+  Future<void> _playHelper({@required bool playFromStart, @required double endpointSeconds}) async {
     _playing = true;
     _playingAudios[_audioId] = this;
     _endpointSeconds = endpointSeconds;
@@ -585,10 +574,8 @@ class Audio with WidgetsBindingObserver {
     }
 
     try {
-      await _sendMethodCall(_audioId, seekMethod, <String, dynamic>{
-        audioIdKey: _audioId,
-        positionSecondsKey: positionSeconds
-      });
+      await _sendMethodCall(
+          _audioId, seekMethod, <String, dynamic>{audioIdKey: _audioId, positionSecondsKey: positionSeconds});
     } on PlatformException catch (e) {
       if (_usingOnErrorAudios.containsKey(_audioId)) {
         // Audio has an onError callback.
@@ -613,16 +600,38 @@ class Audio with WidgetsBindingObserver {
       return;
     }
     if (volume < 0.0 || volume > 1.0) {
-      _logger.warning(
-          'Invalid volume value $volume is begin clamped to 0.0 to 1.0.');
+      _logger.warning('Invalid volume value $volume is begin clamped to 0.0 to 1.0.');
       volume.clamp(0.0, 1.0);
     }
 
     _volume = volume;
 
     try {
-      await _sendMethodCall(_audioId, setVolumeMethod,
-          <String, dynamic>{audioIdKey: _audioId, volumeKey: volume});
+      await _sendMethodCall(_audioId, setVolumeMethod, <String, dynamic>{audioIdKey: _audioId, volumeKey: volume});
+    } on PlatformException catch (e) {
+      if (_usingOnErrorAudios.containsKey(_audioId)) {
+        // Audio has an onError callback.
+        _usingOnErrorAudios[_audioId]._onError(e.message);
+      } else {
+        // Audio does not use an onError callback: rethrow the exception.
+        rethrow;
+      }
+    }
+  }
+
+  /// Gets/Sets playback rate.
+  double get rate => _rate;
+
+  Future<void> setRate(double rate) async {
+    if (!_undisposedAudios.containsKey(_audioId)) {
+      _logger.severe('Called set rate on a disposed Audio');
+      return;
+    }
+
+    _rate = rate;
+
+    try {
+      await _sendMethodCall(_audioId, setRateMethod, <String, dynamic>{audioIdKey: _audioId, rateKey: rate});
     } on PlatformException catch (e) {
       if (_usingOnErrorAudios.containsKey(_audioId)) {
         // Audio has an onError callback.
@@ -653,10 +662,7 @@ class Audio with WidgetsBindingObserver {
   /// Sends method call for starting playback.
   Future<void> _playNative(bool playFromStart, double endpointSeconds) async {
     try {
-      final Map<String, dynamic> args = <String, dynamic>{
-        audioIdKey: _audioId,
-        playFromStartKey: playFromStart
-      };
+      final Map<String, dynamic> args = <String, dynamic>{audioIdKey: _audioId, playFromStartKey: playFromStart};
       if (endpointSeconds != null) args[endpointSecondsKey] = endpointSeconds;
       await _sendMethodCall(_audioId, playMethod, args);
     } on PlatformException catch (e) {
@@ -673,8 +679,7 @@ class Audio with WidgetsBindingObserver {
   /// Sends method call for pausing playback.
   Future<void> _pauseNative() async {
     try {
-      await _sendMethodCall(
-          _audioId, pauseMethod, <String, dynamic>{audioIdKey: _audioId});
+      await _sendMethodCall(_audioId, pauseMethod, <String, dynamic>{audioIdKey: _audioId});
     } on PlatformException catch (e) {
       if (_usingOnErrorAudios.containsKey(_audioId)) {
         // Audio has an onError callback.
@@ -729,8 +734,7 @@ class Audio with WidgetsBindingObserver {
   /// Release underlying audio assets.
   static Future<void> _releaseNative(String audioId) async {
     try {
-      await _sendMethodCall(
-          audioId, releaseMethod, <String, dynamic>{audioIdKey: audioId});
+      await _sendMethodCall(audioId, releaseMethod, <String, dynamic>{audioIdKey: audioId});
     } on PlatformException catch (e) {
       if (_usingOnErrorAudios.containsKey(audioId)) {
         // Audio has an onError callback.
@@ -745,13 +749,11 @@ class Audio with WidgetsBindingObserver {
   // Subsequent methods interact directly with native layers.
 
   /// Call channel.invokeMethod, wrapped in a block to highlight/report errors.
-  static Future<void> _sendMethodCall(String audioId, String method,
-      [dynamic arguments]) async {
+  static Future<void> _sendMethodCall(String audioId, String method, [dynamic arguments]) async {
     try {
       await audioMethodChannel.invokeMethod<dynamic>(method, arguments);
     } on PlatformException catch (e) {
-      _logger.severe(
-          '_sendMethodCall error: audioId: $audioId method: $method', e);
+      _logger.severe('_sendMethodCall error: audioId: $audioId method: $method', e);
       // Calling methods should do any cleanup. Then, either call the _onError
       // callback (if the audio uses it), or rethrow again.
       rethrow;

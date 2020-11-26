@@ -12,7 +12,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Iterable<CallRecord> _callRecords;
+  Iterable<CallRecord>? _callRecords;
   final PhoneLog phoneLog = const PhoneLog();
 
   Future<void> fetchCallLogs() async {
@@ -40,19 +40,15 @@ class _MyAppState extends State<MyApp> {
     final List<Widget> children = <Widget>[
       new Padding(
         padding: const EdgeInsets.all(8.0),
-        child: new RaisedButton(
-            onPressed: checkPermission, child: const Text("Check permission")),
+        child: new RaisedButton(onPressed: checkPermission, child: const Text("Check permission")),
       ),
       new Padding(
         padding: const EdgeInsets.all(8.0),
-        child: new RaisedButton(
-            onPressed: requestPermission,
-            child: const Text("Request permission")),
+        child: new RaisedButton(onPressed: requestPermission, child: const Text("Request permission")),
       ),
       new Padding(
           padding: const EdgeInsets.all(8.0),
-          child: new RaisedButton(
-              onPressed: fetchCallLogs, child: const Text("Fetch phone log"))),
+          child: new RaisedButton(onPressed: fetchCallLogs, child: const Text("Fetch phone log"))),
     ];
 
     for (CallRecord call in _callRecords ?? <CallRecord>[]) {
@@ -87,8 +83,7 @@ class _MyAppState extends State<MyApp> {
               padding: const EdgeInsets.only(left: 8.0),
             ),
             new Padding(
-                child: new Text(call.duration.toString() + 'seconds'),
-                padding: const EdgeInsets.only(left: 8.0))
+                child: new Text(call.duration.toString() + 'seconds'), padding: const EdgeInsets.only(left: 8.0))
           ],
           crossAxisAlignment: CrossAxisAlignment.center,
         )

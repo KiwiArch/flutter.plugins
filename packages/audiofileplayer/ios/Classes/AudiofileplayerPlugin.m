@@ -26,6 +26,8 @@ static NSString *const kOnPositionCallback = @"onPosition";
 static NSString *const kPositionSeconds = @"position_seconds";
 static NSString *const kStopBackgroundDisplay = @"stopBackgroundDisplay";
 static NSString *const kErrorCode = @"AudioPluginError";
+static NSString *const kSetRateMethod = @"setRate";
+static NSString *const kRate = @"rate";
 
 static NSString *const kAudioCategoryMethod = @"iosAudioCategory";
 static NSString *const kAudioCategory = @"iosAudioCategory";
@@ -192,6 +194,10 @@ static NSString *const kMediaSkipIntervalSeconds = @"skipIntervalSeconds";
   } else if ([call.method isEqualToString:kSetVolumeMethod]) {
     double volume = [call.arguments[kVolume] doubleValue];
     [player setVolume:volume];
+    result(nil);
+   } else if ([call.method isEqualToString:kSetRateMethod]) {
+    double rate = [call.arguments[kRate] doubleValue];
+    [player setRate:rate];
     result(nil);
   } else if ([call.method isEqualToString:kPauseMethod]) {
     [player pause];
