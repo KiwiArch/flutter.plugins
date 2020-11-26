@@ -42,6 +42,7 @@ static float const kTimerUpdateIntervalSeconds = 0.25;
       _audioPlayer = audioPlayer;
       _audioPlayer.delegate = self;
       _audioPlayer.numberOfLoops = isLooping ? -1 : 0;
+      _audioPlayer.enableRate = true;
       [_audioPlayer prepareToPlay];
       [_delegate managedPlayerDidLoadWithDuration:_audioPlayer.duration forAudioId:_audioId];
       __weak FLTManagedPlayer *weakSelf = self;
@@ -244,7 +245,6 @@ static float const kTimerUpdateIntervalSeconds = 0.25;
 
 - (void)setRate:(double)rate {
   if (_audioPlayer) {
-    _audioPlayer.enableRate = true;
     _audioPlayer.rate = rate;
   } else {
     _avPlayer.rate = rate;
