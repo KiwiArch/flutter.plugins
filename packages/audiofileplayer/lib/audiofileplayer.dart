@@ -705,7 +705,7 @@ class Audio with WidgetsBindingObserver {
     // Remove from playingAudios, and set instance's [_playing] to false.
     final Audio playingAudio = _playingAudios[audioId];
     _playingAudios.remove(audioId);
-    playingAudio._playing = false;
+    playingAudio?._playing = false;
 
     // Check if audio has previously been disposed.
     final Audio undisposedAudio = _undisposedAudios[audioId];
